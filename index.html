@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Buscar Dados</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Abel&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #943232;
+      font-family: 'Abel', sans-serif;
+      padding: 40px;
+      color: #8b0000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 500px;
+      background-color: #fff5f5;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.16);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #cc0000;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #943232;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #a00000d2;
+    }
+
+    h2 {
+      color: #8b0000;
+      text-align: center;
+    }
+
+    p {
+      text-align: center;
+      font-size: 100%;
+      color: #000;
+      white-space: pre-line;
+    }
+
+    .resultado {
+      margin-top: 20px;
+      white-space: pre-line;
+      background-color: #fff5f5;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.16);
+    }
+
+    .resultado.not-found {
+      margin-top: 20px;
+      padding: 15px;
+      color: white;
+      background-color: #cc0000;
+      border-radius: 5px;
+      text-align: center;
+      font-family: Abel, sans-serif;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <img src="https://d1usx9ugwzilay.cloudfront.net/pictures/ccbe8872-d6fb-4e88-b9f3-077ef0c64039/original" alt="Logo" />
+  <br /><br />
+
+  <div class="container">
+    <h2>Buscar Dados</h2>
+    <input type="text" id="inputId" placeholder="Digite uma palavra chave...">
+    <button onclick="buscarNota()">Buscar</button>
+    <div id="areaResultado"></div>
+  </div>
+
+  <script>
+    let dados = [];
+
+    fetch('./projeto.json')
+      .then(response => response.json())
+      .then(json => {
+        dados = json;
+      })
+      .catch(error => {
+        console.error('Erro ao carregar o JSON:', error);
+        document.getElementById('areaResultado').innerHTML = `
+          <div class="resultado not-found">❌ Erro ao carregar os dados.</div>
+        `;
+      });
+
+    function buscarNota() {
+      const termo = document.getElementById('inputId').value.trim().toLowerCase();
+      const resultado = document.getElementById('areaResultado');
+
+      if (!termo) {
+        resultado.innerHTML = `<div class="resultado not-found">❌ Digite um termo para buscar.</div>`;
+        return;
+      }
+
+      const resultados = dados.filter(obj =>
+        obj.id.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termo) ||
+        obj.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termo)
+      );
+
+      if (resultados.length > 0) {
+        resultado.innerHTML = resultados.map(obj =>
+          `<div class="resultado"><h2>${obj.name.trim()}</h2><br><p>${obj.notas.trim()}</p></div>`
+        ).join('');
+      } else {
+        resultado.innerHTML = `<div class="resultado not-found">❌ Nenhum resultado encontrado.</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
